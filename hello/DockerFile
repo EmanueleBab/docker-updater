@@ -1,0 +1,3 @@
+FROM node:16-alpine
+
+RUN echo 'we are running some # of cool things'
