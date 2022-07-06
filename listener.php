@@ -4,10 +4,12 @@ $env = new Env\Dotenv('.env');
 $imageName = $env->get('IMAGE_NAME');
 $imageDir =  $env->get('IMAGE_DIR');
 $updateCoolDown = $env->get('UPDATE_COOLDOWN');
-
-function checkForUpdates(){
+update();
+loop();
+function checkForUpdates()
+{
     global $imageDir;
-    return exec('cd '.$imageDir.' && git fetch');
+    return exec('cd ' . $imageDir . ' && git fetch');
 }
 
 
@@ -26,10 +28,10 @@ function update()
         exec('docker rmi -f ' . $imageName);
     }
 
-    exec('docker rm ' . $imageName);
-    exec('cd ' . $imageDir . ' && git pull');
-    exec('docker build --tag ' . $imageName . ' ' . $imageDir);
-    exec('docker run --name ' . $imageName . ' ' . $imageName);
+    echo(exec('docker rm ' . $imageName));
+    echo(exec('cd ' . $imageDir . ' && git pull'));
+    echo(exec('docker build --tag ' . $imageName . ' ' . $imageDir));
+    echo(exec('docker run --name ' . $imageName . ' ' . $imageName));
 }
 
 
@@ -37,8 +39,12 @@ function update()
 function loop()
 {
     global $updateCoolDown;
-    if (checkForUpdates()) {
-        update();
+    while (true) {
+        if (checkForUpdates()) {
+            update();
+        }
+        else{
+        }
+        sleep($updateCoolDown);
     }
-    sleep($updateCoolDown);
 }
