@@ -23,7 +23,7 @@ $env = new Env\Dotenv('.env');
 
 //.env vars loading in memory
 $imageName = $env->get('IMAGE_NAME');
-$imageDir =  $env->get('IMAGE_DIR');
+$dockerfileDir =  $env->get('DOCKERFILE_DIR');
 $updateCoolDown = $env->get('UPDATE_COOLDOWN');
 
 /**
@@ -35,8 +35,8 @@ $updateCoolDown = $env->get('UPDATE_COOLDOWN');
  */
 function checkForUpdates()
 {
-    global $imageDir;
-    return shell_exec('cd ' . $imageDir . " && git fetch && git status -uno | grep 'behind'"); 
+    global $dockerfileDir;
+    return shell_exec('cd ' . $dockerfileDir . " && git fetch && git status -uno | grep 'behind'"); 
 }
 
 
@@ -48,7 +48,7 @@ function checkForUpdates()
  */
 function update()
 {
-    global $imageName, $imageDir;
+    global $imageName, $dockerfileDir;
     $imageRunning = exec('docker ps | grep ' . $imageName);
     $imageExisting = exec('docker images | grep ' . $imageName);
     if (!$imageExisting) {
@@ -63,8 +63,8 @@ function update()
 
     }
     echo('pulling from remote...');
-    echo(exec('cd ' . $imageDir . ' && git pull '));
-    echo(exec('docker build --tag ' . $imageName . ' ' . $imageDir.''));
+    echo(exec('cd ' . $dockerfileDir . ' && git pull '));
+    echo(exec('docker build --tag ' . $imageName . ' ' . $dockerfileDir.''));
     exec("bash -c 'docker run --name " . $imageName . ' ' . $imageName. " > /dev/null 2>&1 &' ");
 }
 
