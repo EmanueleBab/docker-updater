@@ -23,20 +23,20 @@ $env = new Env\Dotenv('.env');
 
 //.env vars loading in memory
 $imageName = $env->get('IMAGE_NAME');
-$dockerfileDir =  $env->get('DOCKERFILE_DIR');
+$dockerfileContainerRegistry =  $env->get('DOCKERFILE_CONTAINER_REGISTRY');
 $updateCoolDown = $env->get('UPDATE_COOLDOWN');
 
 /**
  * check for updates function
- * this function works by fetching deltas from the remote repository and then checking his status with 'git status uno' that returns the local branch status,
- *  the result of the 'status' is then grepped to make it return null(or false) or @string if it contains 'behind' 
+ * this function works by fetching deltas from the remote repository and then checking his status with  that returns the local branch status,
+ *  the result of the 'status' is then grepped to make it return null(or false) or @string if it contains 'newer' 
  * 
  * shell_exec is used instead of exec to make sure all the lines returned from the command are fetched
  */
 function checkForUpdates()
 {
-    global $dockerfileDir;
-    return shell_exec('cd ' . $dockerfileDir . " && git fetch && git status -uno | grep 'behind'"); 
+    global $dockerfileContainerRegistry;
+    return shell_exec("docker pull ". $dockerfileContainerRegistry. "  | grep 'newer'"); 
 }
 
 
@@ -48,24 +48,16 @@ function checkForUpdates()
  */
 function update()
 {
-    global $imageName, $dockerfileDir;
+    global $imageName, $dockerfileContainerRegistry;
     $imageRunning = exec('docker ps | grep ' . $imageName);
-    $imageExisting = exec('docker images | grep ' . $imageName);
-    if (!$imageExisting) {
-    } else {
-        if (!$imageRunning) {
-        } else {
-            echo('stopping docker...');
-            exec('docker stop ' . $imageName . ' -t 0');
-            exec('docker rm ' . $imageName);
-        }
-        exec('docker rmi -f ' . $imageName);
 
+    if ($imageRunning) {
+        echo('stopping docker...');
+        exec('docker stop ' . $imageName . ' -t 0');
+        exec('docker rm ' . $imageName);
     }
-    echo('pulling from remote...');
-    echo(exec('cd ' . $dockerfileDir . ' && git pull '));
-    echo(exec('docker build --tag ' . $imageName . ' ' . $dockerfileDir.''));
-    exec("bash -c 'docker run --name " . $imageName . ' ' . $imageName. " > /dev/null 2>&1 &' ");
+    echo('running the new image...');
+    exec("bash -c 'docker run --name " . $imageName . ' ' . $dockerfileContainerRegistry. " > /dev/null 2>&1 &' ");
 }
 
 
@@ -87,5 +79,6 @@ function loop()
 }
 
 /**application starting point  */
+checkForUpdates();
 update();
 loop();
