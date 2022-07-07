@@ -51,6 +51,7 @@ function update()
     global $imageName, $dockerfileContainerRegistry;
     $imageRunning = exec('docker ps | grep ' . $imageName);
 
+    exec('docker rmi $(docker images -f dangling=true -q)');
     if ($imageRunning) {
         echo('stopping docker...');
         exec('docker stop ' . $imageName . ' -t 0');
