@@ -51,12 +51,12 @@ function update()
     global $imageName, $dockerfileContainerRegistry;
     $imageRunning = exec('docker ps | grep ' . $imageName);
 
-    exec('docker rmi $(docker images -f dangling=true -q)');
     if ($imageRunning) {
         echo('stopping docker...');
         exec('docker stop ' . $imageName . ' -t 0');
     }
-    exec('docker rm ' . $imageName);
+    exec('docker rmi -f $(docker images -f dangling=true -q)');
+    exec('docker rm -f ' . $imageName);
     echo('running the new image...');
     exec("bash -c 'docker run --name " . $imageName . ' ' . $dockerfileContainerRegistry. " > /dev/null 2>&1 &' ");
 }
