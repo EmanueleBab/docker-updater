@@ -54,8 +54,8 @@ function update()
     if ($imageRunning) {
         echo('stopping docker...');
         exec('docker stop ' . $imageName . ' -t 0');
-        exec('docker rm ' . $imageName);
     }
+    exec('docker rm ' . $imageName);
     echo('running the new image...');
     exec("bash -c 'docker run --name " . $imageName . ' ' . $dockerfileContainerRegistry. " > /dev/null 2>&1 &' ");
 }
